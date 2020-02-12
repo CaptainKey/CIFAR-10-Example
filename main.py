@@ -20,8 +20,7 @@ class Network:
 
     def __call__(self,x):
         # Définition de la propagation de l'image dans le réseau
-        x = self.relu(self.conv1(x))
-        x = self.pool(x)
+        x = self.pool(self.relu(self.conv1(x)))
         x = self.pool(self.relu(self.conv2(x)))
         x = x.reshape(-1)
         x = self.relu(self.fc1(x))
@@ -31,7 +30,7 @@ class Network:
 
 
 # Définition du répertoire
-path = "/home/tanguy/Documents/Cours/M1-Python/1102/base/data_batch_1.bin"
+path = "/home/tanguy/Documents/Cours/M1-Python/1102/base/test_batch.bin"
 
 # Création de l'instance de la classe dataset
 data = dt.dataset('CIFAR-10',path)
@@ -44,11 +43,25 @@ classes = data.get_classes()
 # Instance de réseau
 net = Network()
 
+net.conv1.load_weight(np.load('params/conv1.weight.npy'))
+net.conv2.load_weight(np.load('params/conv2.weight.npy'))
+
+net.conv1.load_bias(np.load('params/conv1.bias.npy'))
+net.conv2.load_bias(np.load('params/conv2.bias.npy'))
+
+
+net.fc1.load_weight(np.load('params/fc1.weight.npy').T)
+net.fc2.load_weight(np.load('params/fc2.weight.npy').T)
+net.fc3.load_weight(np.load('params/fc3.weight.npy').T)
+
+net.fc1.load_bias(np.load('params/fc1.bias.npy'))
+net.fc2.load_bias(np.load('params/fc2.bias.npy'))
+net.fc3.load_bias(np.load('params/fc3.bias.npy'))
+
 # Boucle sur les images et labels de la base
 for label,img in zip(labels,imgs):
     # Affichage de l'image courane
     data.display_dataset(img,label)
-
     # Propagation de l'image dans le réseau
     output = net(img)
 
@@ -58,6 +71,10 @@ for label,img in zip(labels,imgs):
     # Récupération de l'indice du maximum dans le vecteur de score
     prediction = output.argmax()
 
+    print('Network prediction : {} => {}'.format(prediction, classes[prediction]))
+    print('Truth : {} => {}'.format(label,classes[label]))
+
     # Insertion dans les logs de la prédiction du réseau et du label
     log.info('Network prediction : {} => {}'.format(prediction, classes[prediction]))
     log.info('Truth : {} => {}'.format(label,classes[label]))
+    exit(0)
